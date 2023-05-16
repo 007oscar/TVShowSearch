@@ -8,13 +8,14 @@ chrome.runtime.onInstalled.addListener((details) => {
     contexts: ["page", "selection"],
   });
   chrome.contextMenus.onClicked.addListener((event) => {
-    console.log("🚀 ~ file: background.js:11 ~ chrome.contextMenus.onClicked.addListener ~ event:", event)
-    chrome.search.query({
-      disposition: "NEW_TAB",
-      text: `imdb ${event.selectionText}`,
-    })
+    console.log(
+      "🚀 ~ file: background.js:11 ~ chrome.contextMenus.onClicked.addListener ~ event:",
+      event
+    );
+    chrome.tabs.create({
+      url: `https://www.imdb.com/find/?q=${event.selectionText}&ref_=nv_sr_sm`,
+    });
   });
-
 });
 
-console.log("background script running")
+console.log("background script running");
