@@ -2,9 +2,16 @@ console.log("hello from background");
 
 chrome.runtime.onInstalled.addListener((details) => {
   // console.log(details);
+  chrome.storage.local.set({ shows: [] });
   chrome.contextMenus.create({
-    title: "Test Context Menu",
+    title: "Search Movies",
     id: "contextMenu1",
+    contexts: ["page", "selection"],
+  });
+
+  chrome.contextMenus.create({
+    title: "Speak Text",
+    id: "contextMenu2",
     contexts: ["page", "selection"],
   });
   chrome.contextMenus.onClicked.addListener((event) => {
@@ -12,21 +19,20 @@ chrome.runtime.onInstalled.addListener((details) => {
       "🚀 ~ file: background.js:11 ~ chrome.contextMenus.onClicked.addListener ~ event:",
       event
     );
-    chrome.tabs.create({
-      url: `https://www.imdb.com/find/?q=${event.selectionText}&ref_=nv_sr_sm`,
-    });
+    if (event.menuItemId === "contextMenu1") {
+      fetch(`http://api.tvmaze.com/search/shows/?q=${event.selectionText}`)
+        .then((res) => {
+          return res.json();
+        })
+        .then((data) => {
+          console.log(data);
+          chrome.storage.local.set({
+            shows: data,
+          });
+        });
+    } else if (event.menuItemId === "contextMenu2") {
+      console.log("hello speaker");
+      chrome.tts.speak(event.selectionText)
+    }
   });
-});
-
-console.log("background script running");
-
-chrome.storage.local.get(["text"], (res) => {
-  console.log(res);
-});
-
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  console.log(msg);
-  console.log(sender);
-  sendResponse("received message from background");
-  chrome.tabs.sendMessage(sender.tab.id, "Got your message from background!");
 });
